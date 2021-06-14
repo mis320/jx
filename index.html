@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>解析inpudata</title>
+    <!-- <script src="../js/web3.min.js" type="text/javascript" charset="utf-8"></script> -->
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://mis320.github.io/xiamicommunity/web3.min.js" type="text/javascript" charset="utf-8"></script>
+</head>
+
+
+
+<body>
+
+    <div>
+        <span>ABI</span><BR></BR>
+        <textarea id="txhash" id="" cols="70" rows="2">0x4b44e775b1063f9650357391c6ae606734710a0b78daf601ef57c08bbc713167</textarea><br>
+        <textarea id="txabi" id="" cols="70" rows="20"></textarea><br>
+        <textarea id="bma" id="" cols="10" rows="1"></textarea><br>
+       <div style="align-content: center;"> <button onclick="jx()" >解析</button> <button onclick="bm()" >编码</button></div>
+       <div style="align-content: center;"> </div>
+    </div>
+
+    <div>
+       
+        <span>解析</span><br>
+        <textarea id="div_text" id="" cols="70" rows="20"></textarea>
+    </div>
+    
+    
+</body>
+
+
+
+<script>
+    {
+       
+      
+        var token0 = '0x64ff637fb478863b7468bc97d30a5bf3a428a1fd';
+        var bigAddress;
+        var TOKEN_name;
+        var decimals;
+        let web3Provider;
+        var user;
+        var gasp;
+        //授权
+        {
+            if (window.ethereum) {
+                web3Provider = window.ethereum;
+                try {
+                    // 请求用户授权
+                    window.ethereum.enable
+                } catch (error) {
+                    // 用户不授权时
+                    console.error("User denied account access")
+                }
+            }
+            var web3 = new Web3(web3Provider);//web3js就是你需要的web3实例
+
+            var res = web3.currentProvider;
+           
+            
+
+            console.log(res.networkVersion);
+            web3.eth.getGasPrice().then(res=>{
+                setGas(res);
+                gasp = getGas();
+
+            });
+        }
+    }
+
+
+    function bm() {
+       let a =  $('#bma').val();
+      let  abia=$.parseJSON($('#txabi').val());
+      let cs =  $('#div_text').val()+'';
+      let c=cs.split('\n');
+
+       console.log( web3.eth.abi.encodeFunctionCall(abia[a], c)) //abi.方法 //[参数]
+    }
+
+    function jx() {
+        //console.log($('#txhash').val());
+        //console.log($('#txabi').val());
+        let nowabi=$.parseJSON($('#txabi').val())
+        set('ABI',$('#txabi').val())
+        console.log(nowabi);
+        decodeParamsOfTransaction($('#txhash').val(),nowabi);
+    }
+
+    //解析indputdata
+    async function decodeParamsOfTransaction(txHash, func_abi){
+    var txData = await web3.eth.getTransaction(txHash);
+    var input = txData.input;
+    let abi;
+    for (let index = 0; index < func_abi.length; index++) {
+        const element = func_abi[index];
+        let hexf=web3.eth.abi.encodeFunctionSignature(element)
+        if (input.indexOf(hexf)!=-1) {
+            abi =func_abi[index]; 
+            break;
+        }
+    }
+    console.log(abi);
+    //type
+    //internalType
+    var types = abi.inputs.map(x=>x.type);
+
+    console.log(types);
+    let hexf=web3.eth.abi.encodeFunctionSignature(abi)
+    var _d = input.replace(hexf,"");
+
+    
+    var names = abi.inputs.map(x=>x.name);
+    console.log(names);
+    var r = web3.eth.abi.decodeParameters(types, _d);
+    var dic = {}
+    for(var i=0; i<names.length; i++){
+        dic[names[i]] = r[i];       
+    }
+    console.log(dic);
+    var test = document.getElementById("div_text");
+    test.value =  dic.toString()
+    return dic
+}
+    //编码inputdata
+    function encodeinputdata() {
+    // console.log( web3.eth.abi.encodeFunctionCall(mat[4], ['2778'])) //abi.方法 //[参数]
+    for (let index = 0; index < $.parseJSON($('#txabi').val()).length; index++) {
+        const element = mat[index];
+        let hex=web3.eth.abi.encodeFunctionSignature(element) //获取MethedsID
+        console.log(element.name+"    ||              encode10:  "+hex);
+    } 
+    }
+</script>
+
+
+
+<script>
+    function weiformeth(num) {
+      return  num / Math.pow(10,decimals);
+    }
+    function ethforwei(num) {
+      return  (num+'')+(Math.pow(10,decimals)+'').replace('1','');
+    }
+    function set(key,value) {
+    localStorage.setItem(key, value);
+}
+function get(key) {
+    return localStorage.getItem(key);
+}
+function del(key) {
+    localStorage.setItem(key, "");
+}
+
+
+function setlock(name,value) {
+    localStorage.setItem("lock"+name, value);
+}
+function getlock(name) {
+    return localStorage.getItem("lock"+name);
+}
+
+
+
+function setToken_Name(value) {
+    localStorage.setItem("TONEN_NAME", value);
+}
+function getToken_Name(value) {
+    return localStorage.getItem("TONEN_NAME");
+}
+
+function setdecimals(value) {
+    localStorage.setItem("decimals", value);
+}
+
+function getsetdecimals() {
+    return localStorage.getItem("decimals");
+}
+
+
+function setGas(value) {
+    localStorage.setItem("gas", value);
+}
+function getGas() {
+    return localStorage.getItem("gas");
+}
+//代币ABI(通用ERC20 )
+const  addressabi=[{"inputs":[{"internalType":"address","name":"operator","type":"address"},{"internalType":"address","name":"pauser","type":"address"},{"internalType":"string","name":"name","type":"string"},{"internalType":"string","name":"symbol","type":"string"},{"internalType":"uint8","name":"decimal","type":"uint8"}],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"spender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"account","type":"address"}],"name":"Paused","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"account","type":"address"}],"name":"Unpaused","type":"event"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"burn","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"new_operator","type":"address"},{"internalType":"address","name":"new_pauser","type":"address"}],"name":"changeUser","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"subtractedValue","type":"uint256"}],"name":"decreaseAllowance","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"addedValue","type":"uint256"}],"name":"increaseAllowance","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"mint","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"pause","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"paused","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"recipient","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transfer","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"sender","type":"address"},{"internalType":"address","name":"recipient","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transferFrom","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"unpause","outputs":[],"stateMutability":"nonpayable","type":"function"}];
+
+const  PLTOKEN = '0xB2B445298C550F1b81110B9220037c6D1595041f'
+
+const PLABI = [
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "_token",
+				"type": "address"
+			}
+		],
+		"name": "claim",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "_to",
+				"type": "address[]"
+			},
+			{
+				"name": "_value",
+				"type": "uint256"
+			},
+			{
+				"name": "_tokenAddress",
+				"type": "address"
+			}
+		],
+		"name": "sendErc20",
+		"outputs": [
+			{
+				"name": "_success",
+				"type": "bool"
+			}
+		],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "_to",
+				"type": "address[]"
+			}
+		],
+		"name": "sendEth",
+		"outputs": [
+			{
+				"name": "_success",
+				"type": "bool"
+			}
+		],
+		"payable": true,
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "owner",
+		"outputs": [
+			{
+				"name": "",
+				"type": "address"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "ThisAddress",
+		"outputs": [
+			{
+				"name": "",
+				"type": "address"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	}
+]
+
+init()
+        function init() {
+            var init = document.getElementById("txabi");
+            init.value =  get('ABI');
+        }
+</script>
+</html>
