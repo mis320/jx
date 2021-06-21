@@ -91,9 +91,13 @@
         var inpu;
         inpu = '[]'
         inpu=JSON.parse(inpu);
-        if ($('#div_text').val().replace(' ','')!='') {
+        if (abia[a].inputs.length>0) {
             inpu =  JSON.parse($('#div_text').val());
         }
+
+
+        
+        console.log(inpu);
      
       
      let endcode = web3.eth.abi.encodeFunctionCall(abia[a], inpu)
@@ -106,23 +110,19 @@
     function 调用() {
         let local =  $('#bma').val();
         let  abi=$.parseJSON($('#txabi').val());
-        var inpu;
-        inpu = '[]'
-        inpu=JSON.parse(inpu);
-        if ($('#div_text').val().replace(' ','')!='') {
-            inpu =  JSON.parse($('#div_text').val());
-        }
+       
+        
         
         let boo = abi[local].stateMutability+''
         if (boo.indexOf('view')!=-1) {
             let MyContract = new web3.eth.Contract(abi, to);
             let param='';
-            if (abi[local].inputs>0) {
+            if (abi[local].inputs.length>0) {
                 param = $('#div_text').val().replace('[','').replace(']','')
             }
             
             let functionStr = 'MyContract.methods.'+abi[local].name+'('+param+').call().then(res=>{let test = document.getElementById("div_text2");test.value=res; console.log(res)})'
-            //console.log(functionStr);
+            console.log(functionStr);
             let t="0xbd34c47bc0757fcc5360615f63e7e704c3ffd0fa"
 
             //MyContract.methods.getCustomer(t).call().then(res=>{let test = document.getElementById("div_text");test.value=res; console.log(res)})
@@ -131,17 +131,42 @@
             //MyContract.methods.geUnlockTime().call().then(res=>{console.log(res)})
             let functionx=eval(functionStr);  
         }else{
+
+            var inpu;
+            inpu = '[]'
+            inpu=JSON.parse(inpu);
+
+            if (abi[local].inputs.length>0) {
+                if ($('#div_text').val().replace(' ','')!='') {
+                    inpu =  JSON.parse($('#div_text').val());
+                }
+            }
             console.log(inpu);
             let endcode = web3.eth.abi.encodeFunctionCall(abi[local], inpu)
             console.log( endcode)
             console.log(abi[local].stateMutability);
-            web3.eth.estimateGas({
-            from: web3.currentProvider.selectedAddress,
-            to: to,
-            data: endcode,
-            }).then(gas=>{
-            console.log(gas);
-        })
+
+                web3.eth.estimateGas({
+                from: web3.currentProvider.selectedAddress,
+                to: to,
+                data: endcode,
+                },function (error,res) {
+                    if (error==null) {
+                        let test = document.getElementById("div_text2");test.value='gas:'+res;
+                        console.log(res);
+                    }else{
+                        let test = document.getElementById("div_text2");test.value='gas:事务失败';
+                        console.log(error);
+                    }
+                })
+                
+                /* .then(gas=>{
+                let test = document.getElementById("div_text2");test.value='gas:'+gas;
+                console.log(gas);
+                }) */
+            
+
+           
         }
 
 
