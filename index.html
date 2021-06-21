@@ -16,18 +16,27 @@
 
     <div>
         <span>ABI</span><BR></BR>
-        <textarea id="txhash" id="" cols="70" rows="2">0x4b44e775b1063f9650357391c6ae606734710a0b78daf601ef57c08bbc713167</textarea><br>
-        <textarea id="txabi" id="" cols="70" rows="20"></textarea><br>
+        <textarea id="txhash" id="" cols="90" rows="2">0x4b44e775b1063f9650357391c6ae606734710a0b78daf601ef57c08bbc713167</textarea><br>
+        <textarea id="to" id="" cols="90" rows="1"></textarea><br>
+        <textarea id="txabi" id="" cols="90" rows="12"></textarea><br>
         <textarea id="bma" id="" cols="10" rows="1"></textarea><br>
-       <div style="align-content: center;"> <button onclick="jx()" >解析</button> <button onclick="bm()" >编码</button></div>
+       <div style="align-content: center;">
+         <button onclick="jx()" >解析</button>
+          <button onclick="bm()" >编码</button>
+          <button onclick="调用()" >调用</button>
        <div style="align-content: center;"> </div>
     </div>
 
     <div>
        
         <span>解析</span><br>
-        <textarea id="div_text" id="" cols="70" rows="20"></textarea>
+        <textarea id="div_text" id="" cols="90" rows="7"></textarea><br>
+        <span>编码</span><br>
+        <textarea id="div_text2" id="" cols="90" rows="10"></textarea>
     </div>
+
+
+    <button onclick="test()" > test</button>
     
     
 </body>
@@ -45,6 +54,7 @@
         let web3Provider;
         var user;
         var gasp;
+        var  to;
         //授权
         {
             if (window.ethereum) {
@@ -74,12 +84,76 @@
 
 
     function bm() {
-       let a =  $('#bma').val();
+        let a =  $('#bma').val();
       let  abia=$.parseJSON($('#txabi').val());
-      let cs =  $('#div_text').val()+'';
-      let c=cs.split('\n');
 
-       console.log( web3.eth.abi.encodeFunctionCall(abia[a], c)) //abi.方法 //[参数]
+
+        var inpu;
+        inpu = '[]'
+        inpu=JSON.parse(inpu);
+        if ($('#div_text').val().replace(' ','')!='') {
+            inpu =  JSON.parse($('#div_text').val());
+        }
+     
+      
+     let endcode = web3.eth.abi.encodeFunctionCall(abia[a], inpu)
+      var test = document.getElementById("div_text2");
+      test.value = endcode
+       console.log( endcode) //abi.方法 //[参数]
+    }
+
+
+    function 调用() {
+        let local =  $('#bma').val();
+        let  abi=$.parseJSON($('#txabi').val());
+        var inpu;
+        inpu = '[]'
+        inpu=JSON.parse(inpu);
+        if ($('#div_text').val().replace(' ','')!='') {
+            inpu =  JSON.parse($('#div_text').val());
+        }
+        
+        let boo = abi[local].stateMutability+''
+        if (boo.indexOf('view')!=-1) {
+            let MyContract = new web3.eth.Contract(abi, to);
+            let param='';
+            if (abi[local].inputs>0) {
+                param = $('#div_text').val().replace('[','').replace(']','')
+            }
+            
+            let functionStr = 'MyContract.methods.'+abi[local].name+'('+param+').call().then(res=>{let test = document.getElementById("div_text2");test.value=res; console.log(res)})'
+            //console.log(functionStr);
+            let t="0xbd34c47bc0757fcc5360615f63e7e704c3ffd0fa"
+
+            //MyContract.methods.getCustomer(t).call().then(res=>{let test = document.getElementById("div_text");test.value=res; console.log(res)})
+            
+            //MyContract.methods.geUnlockTime().call().then(res=>{console.log(res)})
+            //MyContract.methods.geUnlockTime().call().then(res=>{console.log(res)})
+            let functionx=eval(functionStr);  
+        }else{
+            console.log(inpu);
+            let endcode = web3.eth.abi.encodeFunctionCall(abi[local], inpu)
+            console.log( endcode)
+            console.log(abi[local].stateMutability);
+            web3.eth.estimateGas({
+            from: web3.currentProvider.selectedAddress,
+            to: to,
+            data: endcode,
+            }).then(gas=>{
+            console.log(gas);
+        })
+        }
+
+
+
+
+
+
+        
+            
+
+
+       
     }
 
     function jx() {
@@ -87,6 +161,7 @@
         //console.log($('#txabi').val());
         let nowabi=$.parseJSON($('#txabi').val())
         set('ABI',$('#txabi').val())
+        set('txhash',$('#txhash').val())
         console.log(nowabi);
         decodeParamsOfTransaction($('#txhash').val(),nowabi);
     }
@@ -95,12 +170,17 @@
     async function decodeParamsOfTransaction(txHash, func_abi){
     var txData = await web3.eth.getTransaction(txHash);
     var input = txData.input;
+    to=txData.to;
+    console.log('to: '+to);
+
     let abi;
+    let localArray;
     for (let index = 0; index < func_abi.length; index++) {
         const element = func_abi[index];
         let hexf=web3.eth.abi.encodeFunctionSignature(element)
         if (input.indexOf(hexf)!=-1) {
             abi =func_abi[index]; 
+            localArray=index;
             break;
         }
     }
@@ -115,25 +195,43 @@
 
     
     var names = abi.inputs.map(x=>x.name);
-    console.log(names);
+    //console.log(names);
     var r = web3.eth.abi.decodeParameters(types, _d);
     var dic = {}
+    let arr =[]
     for(var i=0; i<names.length; i++){
+        arr[arr.length]=r[i]
         dic[names[i]] = r[i];       
     }
-    console.log(dic);
+    
+    console.log(JSON.stringify(dic));
     var test = document.getElementById("div_text");
-    test.value =  dic.toString()
+    var test2 = document.getElementById("bma");
+    var test3 = document.getElementById("to");
+    test.value =  JSON.stringify(arr)
+    test2.value = localArray+''
+    test3.value = to;
     return dic
 }
     //编码inputdata
     function encodeinputdata() {
-    // console.log( web3.eth.abi.encodeFunctionCall(mat[4], ['2778'])) //abi.方法 //[参数]
-    for (let index = 0; index < $.parseJSON($('#txabi').val()).length; index++) {
-        const element = mat[index];
-        let hex=web3.eth.abi.encodeFunctionSignature(element) //获取MethedsID
-        console.log(element.name+"    ||              encode10:  "+hex);
-    } 
+        // console.log( web3.eth.abi.encodeFunctionCall(mat[4], ['2778'])) //abi.方法 //[参数]
+        for (let index = 0; index < $.parseJSON($('#txabi').val()).length; index++) {
+            const element = mat[index];
+            let hex=web3.eth.abi.encodeFunctionSignature(element) //获取MethedsID
+            console.log(element.name+"    ||              encode10:  "+hex);
+        } 
+    }
+
+
+
+    function test() {
+        let nowabi=$.parseJSON($('#txabi').val())
+
+        let myContract = new web3.eth.Contract(nowabi, '0x0768e53EbD2e8E6cCA369ba6812Fffb72c5E1A38');
+        
+        myContract.getCustome('15709244').call().then(console.log)
+        //myContract.getInviteCode().call().then(console.log)
     }
 </script>
 
@@ -287,7 +385,10 @@ const PLABI = [
 init()
         function init() {
             var init = document.getElementById("txabi");
+            var init2 = document.getElementById("txhash");
+            
             init.value =  get('ABI');
+            init2.value =  get('txhash');
         }
 </script>
 </html>
