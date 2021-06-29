@@ -40,7 +40,7 @@
     </div>
 
 
-    <button onclick="test()" > test</button>
+    
     
     
 </body>
@@ -162,8 +162,8 @@
                         let test = document.getElementById("div_text2");test.value='gas:'+res;
                         console.log(res);
                     }else{
-                        let test = document.getElementById("div_text2");test.value='gas:事务失败';
-                        console.log(error);
+                        let test = document.getElementById("div_text2");test.value=error.message;
+                        console.log(error.message);
                     }
                 })
                 
