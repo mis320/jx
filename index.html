@@ -31,6 +31,7 @@
             <button onclick="jx()">解析</button>
             <button onclick="bm()">编码</button>
             <button onclick="调用()">调用</button>
+            <button onclick="temp()">temp</button></button>
             <div style="align-content: center;"> </div>
         </div>
 
@@ -51,6 +52,13 @@
 
 
 <script>
+
+    function temp() {
+        token = '0x9dB51Db1e2C5623d2DFd8B588a67ee00586c1a5A'
+        $.getJSON('https://api.hecoinfo.com/api?module=contract&action=getabi&address=' + token + '&apikey=AVVNGHEYYF8XMWH4EH6RS5NK46ZKSWT7TV', function (data) {
+            console.log(data);
+        })
+    }
     {
 
 
@@ -123,6 +131,8 @@
         to = $('#to').val();
 
 
+
+
         let boo = abi[local].stateMutability + ''
         if (boo.indexOf('view') != -1) {
             let MyContract = new web3.eth.Contract(abi, to);
@@ -137,23 +147,23 @@
             let functionStr = 'MyContract.methods.' + abi[local].name + '(' + param + ').call().then(res=>{let test = document.getElementById("div_text2");test.value=JSON.stringify(res);})'
             setTimeout(() => {
                 let rescall = $.parseJSON($("#div_text2").val())
-                
-                objres={}; 
+
+                objres = {};
                 let jd = $('#jd').val();
-                for (key in rescall){
-                    objres[key]=rescall[key]
-                    if (!web3.utils.isAddress(rescall[key])&& rescall[key].length > 10) {
-                        objres[key]=(rescall[key]/Math.pow(10,jd))
+                for (key in rescall) {
+                    objres[key] = rescall[key]
+                    if (!web3.utils.isAddress(rescall[key]) && rescall[key].length > 10) {
+                        objres[key] = (rescall[key] / Math.pow(10, jd))
                     }
-                    
-                   
+
+
                 }
                 console.log(objres);
             }, 500);
 
 
-           
-            
+
+
 
 
 
@@ -221,20 +231,43 @@
     }
 
     function jx() {
+
+
         //console.log($('#txhash').val());
         //console.log($('#txabi').val());
-        let nowabi = $.parseJSON($('#txabi').val())
-        set('ABI', $('#txabi').val())
-        set('txhash', $('#txhash').val())
-        console.log(nowabi);
-        decodeParamsOfTransaction($('#txhash').val(), nowabi);
+
+        decodeParamsOfTransaction($('#txhash').val());
     }
 
     //解析indputdata
-    async function decodeParamsOfTransaction(txHash, func_abi) {
+    async function decodeParamsOfTransaction(txHash) {
+        var func_abi
         var txData = await web3.eth.getTransaction(txHash);
         var input = txData.input;
         to = txData.to;
+        var test3 = document.getElementById("to");
+        test3.value = to;
+        let falg = ($('#txabi').val())
+        let timeout =1000
+        if (falg == "") {
+            $.getJSON('https://api.hecoinfo.com/api?module=contract&action=getabi&address=' + to + '&apikey=AVVNGHEYYF8XMWH4EH6RS5NK46ZKSWT7TV', function (data) {
+               {
+
+                    console.log(data);
+                    let tempabi = document.getElementById("txabi");
+                    tempabi.value = data.result
+                    
+                }
+            }
+            )
+        }else{
+            timeout =0
+        }
+        
+      setTimeout(() => {
+        func_abi =  JSON.parse($('#txabi').val())
+        
+        console.log(func_abi);
         console.log('to: ' + to);
 
         let abi;
@@ -279,10 +312,10 @@
 
         var test = document.getElementById("div_text");
         var test2 = document.getElementById("bma");
-        var test3 = document.getElementById("to");
+        
         test.value = JSON.stringify(arr)
         test2.value = localArray + ''
-        test3.value = to;
+       
 
         dic = {}
         for (var i = 0; i < names.length; i++) {
@@ -295,11 +328,15 @@
 
             dic[names[i]] = re;
         }
+
+
         console.log("解析：", dic);
 
 
-
+        set('ABI', $('#txabi').val())
+        set('txhash', $('#txhash').val())
         return dic
+      }, timeout);
     }
     //编码inputdata
     function encodeinputdata() {
