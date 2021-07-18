@@ -1,520 +1,92 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>解析inpudata</title>
-    <!-- <script src="../js/web3.min.js" type="text/javascript" charset="utf-8"></script> -->
-    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-    <script src="https://mis320.github.io/xiamicommunity/web3.min.js" type="text/javascript" charset="utf-8"></script>
-
-</head>
-
-
-
-<body>
-
-    <div>
-        <span>ABI</span><BR></BR>
-        <textarea id="txhash" id="" cols="90"
-            rows="2">0x4b44e775b1063f965 <textarea id="to" id="" cols="90" rows="1"></textarea><br>
-        <span>to</span><br>
-        <textarea id="to" id="" cols="90" rows="1"></textarea><br>
-        <span>fee</span><br>
-        <textarea id="fee" id="" cols="90" rows="1">0</textarea><br>
-        <textarea id="txabi" id="" cols="90" rows="12"></textarea><br>
-        <textarea id="bma" id="" cols="10" rows="1"></textarea>
-        <textarea id="jd" id="" cols="2" rows="1">18</textarea><br>
-        <div style="align-content: center;">
-            <button onclick="jx()">解析</button>
-            <button onclick="bm()">编码</button>
-            <button onclick="调用()">调用</button>
-            <button onclick="temp()">temp</button></button>
-            <div style="align-content: center;"> </div>
-        </div>
-
-        <div>
-
-            <span>解析</span><br>
-            <textarea id="div_text" id="" cols="90" rows="7"></textarea><br>
-            <span>编码</span><br>
-            <textarea id="div_text2" id="" cols="90" rows="10"></textarea>
-        </div>
-
-
-
-
-
-</body>
-
-
-
-<script>
-
-    function temp() {
-        token = '0x9dB51Db1e2C5623d2DFd8B588a67ee00586c1a5A'
-        $.getJSON('https://api.hecoinfo.com/api?module=contract&action=getabi&address=' + token + '&apikey=AVVNGHEYYF8XMWH4EH6RS5NK46ZKSWT7TV', function (data) {
-            console.log(data);
-        })
-    }
-    {
-
-
-        var token0 = '0x64ff637fb478863b7468bc97d30a5bf3a428a1fd';
-        var bigAddress;
-        var TOKEN_name;
-        var decimals;
-        let web3Provider;
-        var user;
-        var gasp;
-        var to;
-        //授权
-        {
-            if (window.ethereum) {
-                web3Provider = window.ethereum;
-                try {
-                    // 请求用户授权
-                    window.ethereum.enable
-                } catch (error) {
-                    // 用户不授权时
-                    console.error("User denied account access")
-                }
-            }
-            var web3 = new Web3(web3Provider);//web3js就是你需要的web3实例
-
-            setTimeout(() => {
-                var res = web3.currentProvider;
-                console.log(res.networkVersion);
-                web3.eth.getGasPrice().then(res => {
-                    setGas(res);
-                    gasp = getGas();
-
-                });
-            }, 200);
-
-
-        }
-    }
-
-
-    function bm() {
-        let a = $('#bma').val();
-        let abia = $.parseJSON($('#txabi').val());
-
-
-        var inpu;
-        inpu = '[]'
-        inpu = JSON.parse(inpu);
-        if (abia[a].inputs.length > 0) {
-            inpu = JSON.parse($('#div_text').val());
-        }
-
-
-
-        console.log(inpu);
-
-
-        let endcode = web3.eth.abi.encodeFunctionCall(abia[a], inpu)
-        var test = document.getElementById("div_text2");
-        test.value = endcode
-        console.log(endcode) //abi.方法 //[参数]
-    }
-
-
-    function 调用() {
-        let local = $('#bma').val();
-        let fee = web3.utils.toWei($('#fee').val(), 'ether');
-
-        let abi = $.parseJSON($('#txabi').val());
-        to = $('#to').val();
-
-
-
-
-        let boo = abi[local].stateMutability + ''
-        if (boo.indexOf('view') != -1) {
-            let MyContract = new web3.eth.Contract(abi, to);
-            let param = '';
-            if (abi[local].inputs.length > 0) {
-                param = $('#div_text').val().replace('[', '').replace(']', '')
-
-
-            }
-
-
-            let functionStr = 'MyContract.methods.' + abi[local].name + '(' + param + ').call().then(res=>{let test = document.getElementById("div_text2");test.value=JSON.stringify(res);})'
-            setTimeout(() => {
-                let rescall = $.parseJSON($("#div_text2").val())
-
-                objres = {};
-                let jd = $('#jd').val();
-                for (key in rescall) {
-                    objres[key] = rescall[key]
-                    if (!web3.utils.isAddress(rescall[key]) && rescall[key].length > 10) {
-                        objres[key] = (rescall[key] / Math.pow(10, jd))
-                    }
-
-
-                }
-                console.log(objres);
-            }, 500);
-
-
-
-
-
-
-
-
-            //MyContract.methods.getCustomer(t).call().then(res=>{let test = document.getElementById("div_text");test.value=res; console.log(res)})
-
-            //MyContract.methods.geUnlockTime().call().then(res=>{console.log(res)})
-            //MyContract.methods.geUnlockTime().call().then(res=>{console.log(res)})
-            let functionx = eval(functionStr);
-        } else {
-
-            var inpu;
-            inpu = '[]'
-            inpu = JSON.parse(inpu);
-
-            if (abi[local].inputs.length > 0) {
-                if ($('#div_text').val().replace(' ', '') != '') {
-                    inpu = JSON.parse($('#div_text').val());
-                }
-            }
-            console.log(inpu);
-            let endcode = web3.eth.abi.encodeFunctionCall(abi[local], inpu)
-            console.log(endcode)
-            console.log(abi[local].stateMutability);
-
-            web3.eth.estimateGas({
-                from: web3.currentProvider.selectedAddress,
-                to: to,
-                value: fee,
-                data: endcode,
-            }, function (error, res) {
-                if (error == null) {
-                    let lastGas = (gasp * res) / Math.pow(10, 18)
-                    lastGas = (lastGas) + parseFloat($("#fee").val())
-                    console.log(lastGas);
-
-                    res = (lastGas) + " ht" + "  |1HT可执行：" + 1 / lastGas
-                    let test = document.getElementById("div_text2"); test.value = 'gas：' + res;
-                    console.log(res);
-                } else {
-                    let test = document.getElementById("div_text2"); test.value = error.message;
-                    console.log(error.message);
-                }
-            })
-
-            /* .then(gas=>{
-            let test = document.getElementById("div_text2");test.value='gas:'+gas;
-            console.log(gas);
-            }) */
-
-
-
-        }
-
-
-
-
-
-
-
-
-
-
-
-    }
-
-    function jx() {
-
-
-        //console.log($('#txhash').val());
-        //console.log($('#txabi').val());
-
-        decodeParamsOfTransaction($('#txhash').val());
-    }
-
-    //解析indputdata
-    async function decodeParamsOfTransaction(txHash) {
-        var func_abi
-        var txData = await web3.eth.getTransaction(txHash);
-        var input = txData.input;
-        to = txData.to;
-        var test3 = document.getElementById("to");
-        test3.value = to;
-        let falg = ($('#txabi').val())
-        let timeout =1000
-        if (falg == "") {
-            $.getJSON('https://api.hecoinfo.com/api?module=contract&action=getabi&address=' + to + '&apikey=AVVNGHEYYF8XMWH4EH6RS5NK46ZKSWT7TV', function (data) {
-               {
-
-                    console.log(data);
-                    let tempabi = document.getElementById("txabi");
-                    tempabi.value = data.result
-                    
-                }
-            }
-            )
-        }else{
-            timeout =0
-        }
-        
-      setTimeout(() => {
-        func_abi =  JSON.parse($('#txabi').val())
-        
-        console.log(func_abi);
-        console.log('to: ' + to);
-
-        let abi;
-        let localArray;
-        for (let index = 0; index < func_abi.length; index++) {
-            const element = func_abi[index];
-            let hexf = web3.eth.abi.encodeFunctionSignature(element)
-            if (input.indexOf(hexf) != -1) {
-                abi = func_abi[index];
-                localArray = index;
-                break;
-            }
-        }
-
-        //console.log((abi));
-
-        //type
-        //internalType
-        var types = abi.inputs.map(x => x.type);
-
-
-        let hexf = web3.eth.abi.encodeFunctionSignature(abi)
-        var _d = input.replace(hexf, "");
-
-
-        var names = abi.inputs.map(x => x.name);
-        //console.log(names);
-        var r = web3.eth.abi.decodeParameters(types, _d);
-        var dic = {}
-        let arr = []
-        for (var i = 0; i < names.length; i++) {
-            arr[arr.length] = r[i]
-            dic[names[i]] = r[i];
-        }
-        var prams = {}
-        for (var i = 0; i < names.length; i++) {
-            prams[names[i]] = types[i];
-        }
-        //console.log(prams);
-
-        console.log("当前位置：" + localArray + "  函数名：" + abi.name + "  参数个数：" + types.length, abi, prams);
-
-        var test = document.getElementById("div_text");
-        var test2 = document.getElementById("bma");
-        
-        test.value = JSON.stringify(arr)
-        test2.value = localArray + ''
-       
-
-        dic = {}
-        for (var i = 0; i < names.length; i++) {
-            let jd = $('#jd').val()
-            arr[arr.length] = r[i]
-            let re = r[i];
-            if (types[i].indexOf("uint") != -1 && re.length > 10) {
-                re = re / Math.pow(10, jd)
-            }
-
-            dic[names[i]] = re;
-        }
-
-
-        console.log("解析：", dic);
-
-
-        set('ABI', $('#txabi').val())
-        set('txhash', $('#txhash').val())
-        return dic
-      }, timeout);
-    }
-    //编码inputdata
-    function encodeinputdata() {
-        // console.log( web3.eth.abi.encodeFunctionCall(mat[4], ['2778'])) //abi.方法 //[参数]
-        for (let index = 0; index < $.parseJSON($('#txabi').val()).length; index++) {
-            const element = mat[index];
-            let hex = web3.eth.abi.encodeFunctionSignature(element) //获取MethedsID
-            console.log(element.name + "    ||              encode10:  " + hex);
-        }
-    }
-
-
-
-    function test() {
-        let nowabi = $.parseJSON($('#txabi').val())
-
-        let myContract = new web3.eth.Contract(nowabi, '0x0768e53EbD2e8E6cCA369ba6812Fffb72c5E1A38');
-
-        myContract.getCustome('15709244').call().then(console.log)
-        //myContract.getInviteCode().call().then(console.log)
-    }
-</script>
-
-
-
-<script>
-    function weiformeth(num) {
-        return num / Math.pow(10, decimals);
-    }
-    function ethforwei(num) {
-        return (num + '') + (Math.pow(10, decimals) + '').replace('1', '');
-    }
-    function set(key, value) {
-        localStorage.setItem(key, value);
-    }
-    function get(key) {
-        return localStorage.getItem(key);
-    }
-    function del(key) {
-        localStorage.setItem(key, "");
-    }
-
-
-    function setlock(name, value) {
-        localStorage.setItem("lock" + name, value);
-    }
-    function getlock(name) {
-        return localStorage.getItem("lock" + name);
-    }
-
-
-
-    function setToken_Name(value) {
-        localStorage.setItem("TONEN_NAME", value);
-    }
-    function getToken_Name(value) {
-        return localStorage.getItem("TONEN_NAME");
-    }
-
-    function setdecimals(value) {
-        localStorage.setItem("decimals", value);
-    }
-
-    function getsetdecimals() {
-        return localStorage.getItem("decimals");
-    }
-
-
-    function setGas(value) {
-        localStorage.setItem("gas", value);
-    }
-    function getGas() {
-        return localStorage.getItem("gas");
-    }
-    //代币ABI(通用ERC20 )
-    const addressabi = [{ "inputs": [{ "internalType": "address", "name": "operator", "type": "address" }, { "internalType": "address", "name": "pauser", "type": "address" }, { "internalType": "string", "name": "name", "type": "string" }, { "internalType": "string", "name": "symbol", "type": "string" }, { "internalType": "uint8", "name": "decimal", "type": "uint8" }], "stateMutability": "nonpayable", "type": "constructor" }, { "anonymous": false, "inputs": [{ "indexed": true, "internalType": "address", "name": "owner", "type": "address" }, { "indexed": true, "internalType": "address", "name": "spender", "type": "address" }, { "indexed": false, "internalType": "uint256", "name": "value", "type": "uint256" }], "name": "Approval", "type": "event" }, { "anonymous": false, "inputs": [{ "indexed": false, "internalType": "address", "name": "account", "type": "address" }], "name": "Paused", "type": "event" }, { "anonymous": false, "inputs": [{ "indexed": true, "internalType": "address", "name": "from", "type": "address" }, { "indexed": true, "internalType": "address", "name": "to", "type": "address" }, { "indexed": false, "internalType": "uint256", "name": "value", "type": "uint256" }], "name": "Transfer", "type": "event" }, { "anonymous": false, "inputs": [{ "indexed": false, "internalType": "address", "name": "account", "type": "address" }], "name": "Unpaused", "type": "event" }, { "inputs": [{ "internalType": "address", "name": "owner", "type": "address" }, { "internalType": "address", "name": "spender", "type": "address" }], "name": "allowance", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "spender", "type": "address" }, { "internalType": "uint256", "name": "amount", "type": "uint256" }], "name": "approve", "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "account", "type": "address" }], "name": "balanceOf", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "account", "type": "address" }, { "internalType": "uint256", "name": "amount", "type": "uint256" }], "name": "burn", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "new_operator", "type": "address" }, { "internalType": "address", "name": "new_pauser", "type": "address" }], "name": "changeUser", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [], "name": "decimals", "outputs": [{ "internalType": "uint8", "name": "", "type": "uint8" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "spender", "type": "address" }, { "internalType": "uint256", "name": "subtractedValue", "type": "uint256" }], "name": "decreaseAllowance", "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "spender", "type": "address" }, { "internalType": "uint256", "name": "addedValue", "type": "uint256" }], "name": "increaseAllowance", "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "account", "type": "address" }, { "internalType": "uint256", "name": "amount", "type": "uint256" }], "name": "mint", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [], "name": "name", "outputs": [{ "internalType": "string", "name": "", "type": "string" }], "stateMutability": "view", "type": "function" }, { "inputs": [], "name": "pause", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [], "name": "paused", "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }], "stateMutability": "view", "type": "function" }, { "inputs": [], "name": "symbol", "outputs": [{ "internalType": "string", "name": "", "type": "string" }], "stateMutability": "view", "type": "function" }, { "inputs": [], "name": "totalSupply", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "recipient", "type": "address" }, { "internalType": "uint256", "name": "amount", "type": "uint256" }], "name": "transfer", "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "sender", "type": "address" }, { "internalType": "address", "name": "recipient", "type": "address" }, { "internalType": "uint256", "name": "amount", "type": "uint256" }], "name": "transferFrom", "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [], "name": "unpause", "outputs": [], "stateMutability": "nonpayable", "type": "function" }];
-
-    const PLTOKEN = '0xB2B445298C550F1b81110B9220037c6D1595041f'
-
-    const PLABI = [
-        {
-            "constant": false,
-            "inputs": [
-                {
-                    "name": "_token",
-                    "type": "address"
-                }
-            ],
-            "name": "claim",
-            "outputs": [],
-            "payable": false,
-            "stateMutability": "nonpayable",
-            "type": "function"
-        },
-        {
-            "constant": false,
-            "inputs": [
-                {
-                    "name": "_to",
-                    "type": "address[]"
-                },
-                {
-                    "name": "_value",
-                    "type": "uint256"
-                },
-                {
-                    "name": "_tokenAddress",
-                    "type": "address"
-                }
-            ],
-            "name": "sendErc20",
-            "outputs": [
-                {
-                    "name": "_success",
-                    "type": "bool"
-                }
-            ],
-            "payable": false,
-            "stateMutability": "nonpayable",
-            "type": "function"
-        },
-        {
-            "constant": false,
-            "inputs": [
-                {
-                    "name": "_to",
-                    "type": "address[]"
-                }
-            ],
-            "name": "sendEth",
-            "outputs": [
-                {
-                    "name": "_success",
-                    "type": "bool"
-                }
-            ],
-            "payable": true,
-            "stateMutability": "payable",
-            "type": "function"
-        },
-        {
-            "constant": true,
-            "inputs": [],
-            "name": "owner",
-            "outputs": [
-                {
-                    "name": "",
-                    "type": "address"
-                }
-            ],
-            "payable": false,
-            "stateMutability": "view",
-            "type": "function"
-        },
-        {
-            "constant": true,
-            "inputs": [],
-            "name": "ThisAddress",
-            "outputs": [
-                {
-                    "name": "",
-                    "type": "address"
-                }
-            ],
-            "payable": false,
-            "stateMutability": "view",
-            "type": "function"
-        }
-    ]
-
-    init()
-    function init() {
-        var init = document.getElementById("txabi");
-        var init2 = document.getElementById("txhash");
-
-        init.value = get('ABI');
-        init2.value = get('txhash');
-    }
-</script>
-
-</html>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible"content="IE=edge"><meta name="viewport"content="width=device-width, initial-scale=1.0"><title>解析inpudata</title><!--<script src="../js/web3.min.js"type="text/javascript"charset="utf-8"></script>--><script src="https://code.jquery.com/jquery-3.3.1.min.js"></script><script src="https://mis320.github.io/xiamicommunity/web3.min.js"type="text/javascript"charset="utf-8"></script></head><body><div><span>ABI</span><BR></BR><textarea id="txhash"id=""cols="90"rows="2">0x4b44e775b1063f965<textarea id="to"id=""cols="90"rows="1"></textarea><br><span>to</span><br><textarea id="to"id=""cols="90"rows="1"></textarea><br><span>fee</span><br><textarea id="fee"id=""cols="90"rows="1">0</textarea><br><textarea id="txabi"id=""cols="90"rows="12"></textarea><br><textarea id="bma"id=""cols="10"rows="1"></textarea><textarea id="jd"id=""cols="2"rows="1">18</textarea><br><div style="align-content: center;"><button onclick="jx()">解析</button><button onclick="bm()">编码</button><button onclick="调用()">调用</button><button onclick="temp()">temp</button></button><div style="align-content: center;"></div></div><div><span>解析</span><br><textarea id="div_text"id=""cols="90"rows="7"></textarea><br><span>编码</span><br><textarea id="div_text2"id=""cols="90"rows="10"></textarea></div></body><script>function temp(){token='0x9dB51Db1e2C5623d2DFd8B588a67ee00586c1a5A'
+$.getJSON('https://api.hecoinfo.com/api?module=contract&action=getabi&address='+token+'&apikey=AVVNGHEYYF8XMWH4EH6RS5NK46ZKSWT7TV',function(data){console.log(data);})}{var token0='0x64ff637fb478863b7468bc97d30a5bf3a428a1fd';var bigAddress;var TOKEN_name;var decimals;let web3Provider;var user;var gasp;var to;{if(window.ethereum){web3Provider=window.ethereum;try{window.ethereum.enable}catch(error){console.error("User denied account access")}}
+var web3=new Web3(web3Provider);setTimeout(()=>{var res=web3.currentProvider;console.log(res.networkVersion);web3.eth.getGasPrice().then(res=>{setGas(res);gasp=getGas();});},200);}}
+function bm(){let a=$('#bma').val();let abia=$.parseJSON($('#txabi').val());var inpu;inpu='[]'
+inpu=JSON.parse(inpu);if(abia[a].inputs.length>0){inpu=JSON.parse($('#div_text').val());}
+console.log(inpu);let endcode=web3.eth.abi.encodeFunctionCall(abia[a],inpu)
+var test=document.getElementById("div_text2");test.value=endcode
+console.log(endcode)}
+function 调用(){let local=$('#bma').val();let fee=web3.utils.toWei($('#fee').val(),'ether');let abi=$.parseJSON($('#txabi').val());to=$('#to').val();let boo=abi[local].stateMutability+''
+if(boo.indexOf('view')!=-1){let MyContract=new web3.eth.Contract(abi,to);let param='';if(abi[local].inputs.length>0){param=$('#div_text').val().replace('[','').replace(']','')}
+let functionStr='MyContract.methods.'+abi[local].name+'('+param+').call().then(res=>{let test = document.getElementById("div_text2");test.value=JSON.stringify(res);})'
+setTimeout(()=>{let rescall=$.parseJSON($("#div_text2").val())
+objres={};let jd=$('#jd').val();for(key in rescall){objres[key]=rescall[key]
+if(!web3.utils.isAddress(rescall[key])&&rescall[key].length>10){objres[key]=(rescall[key]/Math.pow(10,jd))}}
+console.log(objres);},500);let functionx=eval(functionStr);}else{var inpu;inpu='[]'
+inpu=JSON.parse(inpu);if(abi[local].inputs.length>0){if($('#div_text').val().replace(' ','')!=''){inpu=JSON.parse($('#div_text').val());}}
+console.log(inpu);let endcode=web3.eth.abi.encodeFunctionCall(abi[local],inpu)
+console.log(endcode)
+console.log(abi[local].stateMutability);web3.eth.estimateGas({from:web3.currentProvider.selectedAddress,to:to,value:fee,data:endcode,},function(error,res){if(error==null){let lastGas=(gasp*res)/Math.pow(10,18)
+lastGas=(lastGas)+parseFloat($("#fee").val())
+console.log(lastGas);res=(lastGas)+" ht"+"  |1HT可执行："+1/lastGas
+let test=document.getElementById("div_text2");test.value='gas：'+res;console.log(res);}else{let test=document.getElementById("div_text2");test.value=error.message;console.log(error.message);}})}}
+function jx(){let jx=$('#div_text').val()
+if(jx.indexOf('[')!=-1||jx==''){decodeParamsOfTransaction($('#txhash').val());}else{decodeParamsOfTransaction1()}}
+async function decodeParamsOfTransaction1(){let a=$('#bma').val();let func_abi=JSON.parse(($('#txabi').val()))
+let input=($('#div_text').val())
+setTimeout(()=>{console.log(func_abi);console.log('to: '+to);abi=func_abi[a]
+console.log((abi));var types=abi.inputs.map(x=>x.type);let hexf=web3.eth.abi.encodeFunctionSignature(abi)
+var _d=input.replace(hexf,"");var names=abi.inputs.map(x=>x.name);var r=web3.eth.abi.decodeParameters(types,_d);var dic={}
+let arr=[]
+for(var i=0;i<names.length;i++){arr[arr.length]=r[i]
+dic[names[i]]=r[i];}
+var prams={}
+for(var i=0;i<names.length;i++){prams[names[i]]=types[i];}
+console.log("当前位置："+a+"  函数名："+abi.name+"  参数个数："+types.length,abi,prams);dic={}
+let jd=$('#jd').val()
+for(var i=0;i<names.length;i++){arr[arr.length]=r[i]
+let re=r[i];if(types[i].indexOf("uint")!=-1&&re.length>10){re=toolNumber(re/Math.pow(10,jd))}
+dic[names[i]]=re;}
+console.log("解析：",dic);return dic},100);}
+async function decodeParamsOfTransaction(txHash){var func_abi
+var txData=await web3.eth.getTransaction(txHash);var input=txData.input;to=txData.to;var test3=document.getElementById("to");test3.value=to;let falg=($('#txabi').val())
+let timeout=1000
+if(falg==""){$.getJSON('https://api.hecoinfo.com/api?module=contract&action=getabi&address='+to+'&apikey=AVVNGHEYYF8XMWH4EH6RS5NK46ZKSWT7TV',function(data){{console.log(data);let tempabi=document.getElementById("txabi");tempabi.value=data.result}})}else{timeout=0}
+setTimeout(()=>{func_abi=JSON.parse($('#txabi').val())
+console.log(func_abi);console.log('to: '+to);let abi;let localArray;for(let index=0;index<func_abi.length;index++){const element=func_abi[index];let hexf=web3.eth.abi.encodeFunctionSignature(element)
+if(input.indexOf(hexf)!=-1){abi=func_abi[index];localArray=index;break;}}
+var types=abi.inputs.map(x=>x.type);let hexf=web3.eth.abi.encodeFunctionSignature(abi)
+var _d=input.replace(hexf,"");var names=abi.inputs.map(x=>x.name);var r=web3.eth.abi.decodeParameters(types,_d);var dic={}
+let arr=[]
+for(var i=0;i<names.length;i++){arr[arr.length]=r[i]
+dic[names[i]]=r[i];}
+var prams={}
+for(var i=0;i<names.length;i++){prams[names[i]]=types[i];}
+console.log("当前位置："+localArray+"  函数名："+abi.name+"  参数个数："+types.length,abi,prams);var test=document.getElementById("div_text");var test2=document.getElementById("bma");test.value=JSON.stringify(arr)
+test2.value=localArray+''
+dic={}
+for(var i=0;i<names.length;i++){let jd=$('#jd').val()
+arr[arr.length]=r[i]
+let re=r[i];if(types[i].indexOf("uint")!=-1&&re.length>10){re=re/Math.pow(10,jd)}
+dic[names[i]]=re;}
+console.log("解析：",dic);set('ABI',$('#txabi').val())
+set('txhash',$('#txhash').val())
+return dic},timeout);}
+function encodeinputdata(){for(let index=0;index<$.parseJSON($('#txabi').val()).length;index++){const element=mat[index];let hex=web3.eth.abi.encodeFunctionSignature(element)
+console.log(element.name+"    ||              encode10:  "+hex);}}
+function test(){let nowabi=$.parseJSON($('#txabi').val())
+let myContract=new web3.eth.Contract(nowabi,'0x0768e53EbD2e8E6cCA369ba6812Fffb72c5E1A38');myContract.getCustome('15709244').call().then(console.log)}</script><script>function weiformeth(num){return num/Math.pow(10,decimals);}
+function ethforwei(num){return(num+'')+(Math.pow(10,decimals)+'').replace('1','');}
+function toolNumber(num_str){num_str=num_str.toString();if(num_str.indexOf("+")!=-1){num_str=num_str.replace("+","");}
+if(num_str.indexOf("E")!=-1||num_str.indexOf("e")!=-1){var resValue="",power="",result=null,dotIndex=0,resArr=[],sym="";var numStr=num_str.toString();if(numStr[0]=="-"){numStr=numStr.substr(1);sym="-";}
+if(numStr.indexOf("E")!=-1||numStr.indexOf("e")!=-1){var regExp=new RegExp("^(((\\d+.?\\d+)|(\\d+))[Ee]{1}((-(\\d+))|(\\d+)))$","ig");result=regExp.exec(numStr);if(result!=null){resValue=result[2];power=result[5];result=null;}
+if(!resValue&&!power){return false;}
+dotIndex=resValue.indexOf(".")==-1?0:resValue.indexOf(".");resValue=resValue.replace(".","");resArr=resValue.split("");if(Number(power)>=0){var subres=resValue.substr(dotIndex);power=Number(power);for(var i=0;i<=power-subres.length;i++){resArr.push("0");}
+if(power-subres.length<0){resArr.splice(dotIndex+power,0,".");}}else{power=power.replace("-","");power=Number(power);for(var i=0;i<power-dotIndex;i++){resArr.unshift("0");}
+var n=power-dotIndex>=0?1:-(power-dotIndex);resArr.splice(n,0,".");}}
+resValue=resArr.join("");return sym+resValue;}else{return num_str;}}
+function set(key,value){localStorage.setItem(key,value);}
+function get(key){return localStorage.getItem(key);}
+function del(key){localStorage.setItem(key,"");}
+function setlock(name,value){localStorage.setItem("lock"+name,value);}
+function getlock(name){return localStorage.getItem("lock"+name);}
+function setToken_Name(value){localStorage.setItem("TONEN_NAME",value);}
+function getToken_Name(value){return localStorage.getItem("TONEN_NAME");}
+function setdecimals(value){localStorage.setItem("decimals",value);}
+function getsetdecimals(){return localStorage.getItem("decimals");}
+function setGas(value){localStorage.setItem("gas",value);}
+function getGas(){return localStorage.getItem("gas");}
+const addressabi=[{"inputs":[{"internalType":"address","name":"operator","type":"address"},{"internalType":"address","name":"pauser","type":"address"},{"internalType":"string","name":"name","type":"string"},{"internalType":"string","name":"symbol","type":"string"},{"internalType":"uint8","name":"decimal","type":"uint8"}],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"spender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"account","type":"address"}],"name":"Paused","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"account","type":"address"}],"name":"Unpaused","type":"event"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"burn","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"new_operator","type":"address"},{"internalType":"address","name":"new_pauser","type":"address"}],"name":"changeUser","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"subtractedValue","type":"uint256"}],"name":"decreaseAllowance","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"addedValue","type":"uint256"}],"name":"increaseAllowance","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"mint","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"pause","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"paused","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"recipient","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transfer","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"sender","type":"address"},{"internalType":"address","name":"recipient","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transferFrom","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"unpause","outputs":[],"stateMutability":"nonpayable","type":"function"}];const PLTOKEN='0xB2B445298C550F1b81110B9220037c6D1595041f'
+const PLABI=[{"constant":false,"inputs":[{"name":"_token","type":"address"}],"name":"claim","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_to","type":"address[]"},{"name":"_value","type":"uint256"},{"name":"_tokenAddress","type":"address"}],"name":"sendErc20","outputs":[{"name":"_success","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_to","type":"address[]"}],"name":"sendEth","outputs":[{"name":"_success","type":"bool"}],"payable":true,"stateMutability":"payable","type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"ThisAddress","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"}]
+init()
+function init(){var init=document.getElementById("txabi");var init2=document.getElementById("txhash");init.value=get('ABI');init2.value=get('txhash');}</script></html>
