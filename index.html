@@ -438,7 +438,7 @@
                 arr[arr.length] = r[i]
                 let re = r[i];
                 if (types[i].indexOf("uint") != -1 && re.length > 10) {
-                    re = ethers.utils.bigNumberify(re + '').div((pow(jd)).toString())
+                    re = ethers.utils.bigNumberify(re + '').div((pow(jd))).toString()
                 }
                 dic[names[i]] = re;
             }
